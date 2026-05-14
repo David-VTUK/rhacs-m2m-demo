@@ -35,4 +35,8 @@ jobs:
         run: |
           set -euo pipefail
           roxctl image scan --output=table --insecure-skip-tls-verify --image="${{ env.IMAGE_REF }}"
-
+      - name: Check image with roxctl
+        shell: bash
+        run: |
+          set -euo pipefail
+          roxctl image check --output=table --insecure-skip-tls-verify --image="${{ env.IMAGE_REF }}"
