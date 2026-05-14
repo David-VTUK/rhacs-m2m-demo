@@ -4,7 +4,7 @@ on:
   workflow_call:
     inputs:
       image:
-        description: "Full image reference to scan (e.g. quay.io/org/app:latest)"
+        description: "Full image reference to scan (e.g. registry/org/repo:<git-sha>)"
         required: true
         type: string
 

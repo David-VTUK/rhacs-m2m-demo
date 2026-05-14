@@ -20,7 +20,7 @@ jobs:
       uses: redhat-actions/buildah-build@v2
       with:
         image: myapp
-        tags: latest ${{ github.sha }}
+        tags: ${{ github.sha }}
         containerfiles: |
           ./Containerfile
 
@@ -37,11 +37,8 @@ jobs:
 
     - name: Print image url
       env:
-        SCAN_REF: ${{ steps.push-to-quay.outputs.registry-path }}
-        ALL_TAGS: ${{ steps.push-to-quay.outputs.registry-paths }}
-      run: |
-        echo "Image (scan ref): ${SCAN_REF}"
-        echo "All tags: ${ALL_TAGS}"
+        IMAGE_REF: ${{ steps.push-to-quay.outputs.registry-path }}
+      run: echo "Image pushed: ${IMAGE_REF}"
 
   rhacs-scan:
     name: Scan pushed image with RHACS
