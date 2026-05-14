@@ -1,0 +1,31 @@
+{
+	"name": "go-dev-container",
+    "image": "mcr.microsoft.com/devcontainers/go:1.23-bookworm",
+	// Configure tool-specific properties.
+	"customizations": {
+		// Configure properties specific to VS Code.
+		"vscode": {
+			"settings": {},
+			"extensions": [
+				"streetsidesoftware.code-spell-checker",
+				"redhat.vscode-yaml",
+                "yzhang.markdown-all-in-one",
+				"golang.go",
+				"ms-azuretools.vscode-docker",
+				"github.vscode-github-actions"
+			]
+		}
+	},
+    "workspaceFolder": "/workspace",
+	"workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,Z",
+	"containerUser": "vscode",
+
+	"containerEnv": {
+		"GIT_USER": "${localEnv:GIT_USER}",
+		"GIT_EMAIL": "${localEnv:GIT_EMAIL}"
+  	},
+
+    "postStartCommand": "git config --global user.name \"$GIT_USER\" && git config --global user.email \"$GIT_EMAIL\""
+
+
+}
