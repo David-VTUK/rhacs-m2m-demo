@@ -10,7 +10,7 @@ jobs:
     name: Build and push image
     runs-on: ubuntu-22.04
     outputs:
-      image_ref: ${{ steps.image-ref.outputs.path }}
+      image_ref: ${{ steps.push-to-quay.outputs.registry-path }}
 
     steps:
     - uses: actions/checkout@v4
@@ -35,15 +35,13 @@ jobs:
         username: ${{ secrets.QUAY_STAGING_USERNAME }}
         password: ${{ secrets.QUAY_STAGING_PASSWORD }}
 
-    - name: Image ref for downstream scan
-      id: image-ref
-      run: |
-        # registry-paths can list multiple tags (e.g. latest + sha); RHACS needs one ref
-        first=$(printf '%s\n' "${{ steps.push-to-quay.outputs.registry-paths }}" | head -1)
-        echo "path=${first}" >> "$GITHUB_OUTPUT"
-
     - name: Print image url
-      run: echo "Image pushed to ${{ steps.push-to-quay.outputs.registry-paths }}"
+      env:
+        SCAN_REF: ${{ steps.push-to-quay.outputs.registry-path }}
+        ALL_TAGS: ${{ steps.push-to-quay.outputs.registry-paths }}
+      run: |
+        echo "Image (scan ref): ${SCAN_REF}"
+        echo "All tags: ${ALL_TAGS}"
 
   rhacs-scan:
     name: Scan pushed image with RHACS
