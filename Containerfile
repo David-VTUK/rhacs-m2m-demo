@@ -7,7 +7,7 @@ COPY main.go .
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o myapp main.go
 
-FROM debian:jessie
+FROM trixie-20250407-slim
 
 COPY --from=builder /app/myapp /myapp
 
