@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   build:
-    name: Build and push image
+    name: Build and push image to staging
     runs-on: ubuntu-22.04
     outputs:
       image_ref: ${{ steps.push-to-quay.outputs.registry-path }}
