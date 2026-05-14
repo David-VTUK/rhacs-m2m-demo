@@ -1,6 +1,9 @@
 name: Build and Push Image to Staging
 on: [ workflow_dispatch ]
 
+env:
+  QUAY_STAGING_URL: registry-quay-quay-staging.apps.ocp.tfrbr.sandbox232.opentlc.com/david
+
 permissions:
   id-token: write
   contents: read
@@ -31,7 +34,7 @@ jobs:
       with:
         image: ${{ steps.build-image.outputs.image }}
         tags: ${{ steps.build-image.outputs.tags }}
-        registry: ${{ secrets.QUAY_STAGING_URL }}
+        registry: ${{ env.QUAY_STAGING_URL }}
         username: ${{ secrets.QUAY_STAGING_USERNAME }}
         password: ${{ secrets.QUAY_STAGING_PASSWORD }}
 
