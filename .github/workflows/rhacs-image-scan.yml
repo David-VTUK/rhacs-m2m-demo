@@ -43,4 +43,4 @@ jobs:
       - name: Scan image with roxctl
         shell: bash
         run: |
-          roxctl image scan --output=table --image="${{ env.IMAGE_REF }}"
+          roxctl image scan --output=table --insecure-skip-tls-verify --image="${{ env.IMAGE_REF }}"
