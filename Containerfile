@@ -7,7 +7,7 @@ COPY main.go .
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o myapp main.go
 
-FROM trixie-20250407-slim
+FROM alpine:3.20.2
 
 COPY --from=builder /app/myapp /myapp
 
