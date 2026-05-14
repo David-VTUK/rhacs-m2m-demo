@@ -1,0 +1,46 @@
+name: RHACS Image Scan (M2M)
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+    inputs:
+      image:
+        description: "Full image reference to scan (e.g. quay.io/org/app:latest)"
+        required: true
+        type: string
+      fail_on_policy_violation:
+        description: "Fail the workflow if RHACS policies are violated"
+        required: false
+        default: "true"
+        type: choice
+        options: ["true", "false"]
+
+env:
+  IMAGE_REF: ${{ steps.image.outputs.ref }}
+
+permissions:
+  id-token: write # This is required for requesting the JWT
+
+jobs:
+  rhacs-image-scan:
+    name: Scan image with RHACS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Central Login
+        uses: stackrox/central-login@v1
+        with:
+          endpoint: https://central-rhacs-operator.apps.ocp.tfrbr.sandbox232.opentlc.com:443
+      - name: Install roxctl
+        uses: stackrox/roxctl-installer-action@v1
+        with:
+          central-endpoint: ${{ env.CENTRAL_ENDPOINT }}
+          central-token: ${{ env.ROX_API_TOKEN }}
+      - name: Scan image with roxctl
+        shell: bash
+        run: |
+          roxctl image scan --output=table --image="${{ env.IMAGE_REF }}"
+          
