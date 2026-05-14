@@ -18,9 +18,6 @@ on:
         type: choice
         options: ["true", "false"]
 
-env:
-  IMAGE_REF: ${{ steps.image.outputs.ref }}
-
 permissions:
   id-token: write # This is required for requesting the JWT
 
@@ -30,6 +27,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Resolve image ref
+        shell: bash
+        run: echo "IMAGE_REF=${{ inputs.image }}" >> "$GITHUB_ENV"
+
       - name: Central Login
         uses: stackrox/central-login@v1
         with:
@@ -43,4 +44,3 @@ jobs:
         shell: bash
         run: |
           roxctl image scan --output=table --image="${{ env.IMAGE_REF }}"
-          
