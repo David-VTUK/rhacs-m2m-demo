@@ -1,10 +1,12 @@
 name: Build and Push Image
-on: [ push ]
+on: [ workflow_dispatch ]
 
 jobs:
   build:
     name: Build and push image
     runs-on: ubuntu-22.04
+    outputs:
+      image_ref: ${{ steps.image-ref.outputs.path }}
 
     steps:
     - uses: actions/checkout@v4
@@ -25,9 +27,25 @@ jobs:
       with:
         image: ${{ steps.build-image.outputs.image }}
         tags: ${{ steps.build-image.outputs.tags }}
-        registry: quay.io/quay-user
-        username: quay-user
-        password: ${{ secrets.REGISTRY_PASSWORD }}
+        registry: ${{ secrets.QUAY_STAGING_URL }}
+        username: ${{ secrets.QUAY_STAGING_USERNAME }}
+        password: ${{ secrets.QUAY_STAGING_PASSWORD }}
+
+    - name: Image ref for downstream scan
+      id: image-ref
+      run: |
+        # registry-paths can list multiple tags (e.g. latest + sha); RHACS needs one ref
+        first=$(printf '%s\n' "${{ steps.push-to-quay.outputs.registry-paths }}" | head -1)
+        echo "path=${first}" >> "$GITHUB_OUTPUT"
 
     - name: Print image url
       run: echo "Image pushed to ${{ steps.push-to-quay.outputs.registry-paths }}"
+
+  rhacs-scan:
+    name: Scan pushed image with RHACS
+    needs: build
+    uses: ./.github/workflows/rhacs-image-scan.yml
+    secrets: inherit
+    with:
+      image: ${{ needs.build.outputs.image_ref }}
+      fail_on_policy_violation: "true"

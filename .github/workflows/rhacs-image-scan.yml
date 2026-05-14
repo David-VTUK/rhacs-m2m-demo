@@ -1,22 +1,12 @@
 name: RHACS Image Scan (M2M)
 
 on:
-  push:
-    branches: ["main"]
-  pull_request:
-    branches: ["main"]
-  workflow_dispatch:
+  workflow_call:
     inputs:
       image:
         description: "Full image reference to scan (e.g. quay.io/org/app:latest)"
         required: true
         type: string
-      fail_on_policy_violation:
-        description: "Fail the workflow if RHACS policies are violated"
-        required: false
-        default: "true"
-        type: choice
-        options: ["true", "false"]
 
 permissions:
   id-token: write # This is required for requesting the JWT
@@ -43,4 +33,6 @@ jobs:
       - name: Scan image with roxctl
         shell: bash
         run: |
+          set -euo pipefail
           roxctl image scan --output=table --insecure-skip-tls-verify --image="${{ env.IMAGE_REF }}"
+
