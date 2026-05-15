@@ -16,14 +16,12 @@ jobs:
     runs-on: ubuntu-22.04
     outputs:
       image_ref: ${{ steps.push-to-staging-quay.outputs.registry-path }}
-      image_name: ${{ steps.build-image.outputs.image }}
-      image_tags: ${{ steps.build-image.outputs.tags }}
 
     steps:
     - uses: actions/checkout@v4
 
     - name: Build Image
-      id: build-image
+      id: build-image-staging
       uses: redhat-actions/buildah-build@v2
       with:
         image: myapp
@@ -35,8 +33,8 @@ jobs:
       id: push-to-staging-quay
       uses: redhat-actions/push-to-registry@v2
       with:
-        image: ${{ steps.build-image.outputs.image }}
-        tags: ${{ steps.build-image.outputs.tags }}
+        image: ${{ steps.build-image-staging.outputs.image }}
+        tags: ${{ steps.build-image-staging.outputs.tags }}
         registry: ${{ env.QUAY_STAGING_URL }}
         username: ${{ secrets.QUAY_STAGING_USERNAME }}
         password: ${{ secrets.QUAY_STAGING_PASSWORD }}
@@ -81,12 +79,22 @@ jobs:
     runs-on: ubuntu-22.04
     needs: [build, rhacs-image-scan]
     steps:
+
+    - name: Build Image
+      id: build-image-prod
+      uses: redhat-actions/buildah-build@v2
+      with:
+        image: myapp
+        tags: ${{ github.sha }}
+        containerfiles: |
+          ./Containerfile
+
     - name: Push To quay.io
       id: push-to-quay
       uses: redhat-actions/push-to-registry@v2
       with:
-        image: ${{ needs.build.outputs.image_name }}
-        tags: ${{ needs.build.outputs.image_tags }}
+        image: ${{ steps.build-image-prod.outputs.image }}
+        tags: ${{ steps.build-image-prod.outputs.tags }}
         registry: ${{ env.QUAY_PROD_URL }}
         username: ${{ secrets.QUAY_PROD_USERNAME }}
         password: ${{ secrets.QUAY_PROD_PASSWORD }}
