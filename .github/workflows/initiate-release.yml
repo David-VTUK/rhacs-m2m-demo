@@ -71,10 +71,10 @@ jobs:
           roxctl image scan --output=csv --insecure-skip-tls-verify --image="${{ env.IMAGE_REF }}" > scan-results.csv
 
       - name: Read CSV File
-          id: read_csv_image_scan
-          uses: juliangruber/read-file-action@v1
-          with:
-            path: "./scan-results.csv"
+        id: read_csv_image_scan
+        uses: juliangruber/read-file-action@v1
+        with:
+          path: "./scan-results.csv"
 
       - name: Convert CSV to Markdown
         uses: petems/csv-to-md-table-action@v4.0.0
@@ -92,10 +92,10 @@ jobs:
           roxctl image check --output=csv --insecure-skip-tls-verify --image="${{ env.IMAGE_REF }}" > check-results.csv
 
       - name: Read CSV File
-          id: read_csv_image_check
-          uses: juliangruber/read-file-action@v1
-          with:
-            path: "./check-results.csv"
+        id: read_csv_image_check
+        uses: juliangruber/read-file-action@v1
+        with:
+          path: "./check-results.csv"
 
       - name: Convert CSV to Markdown
         uses: petems/csv-to-md-table-action@v4.0.0
