@@ -1,0 +1,101 @@
+name: Build and Push Image to Staging and Production if image is safe
+description: This workflow builds and pushes the image to staging, scans it with RHACS, and then pushes it to production if it is safe.
+on: [ workflow_dispatch ]
+
+env:
+  QUAY_STAGING_URL: registry-quay-quay-staging.apps.ocp.tfrbr.sandbox232.opentlc.com/david
+  QUAY_PROD_URL: registry-quay-quay-production.apps.ocp.tfrbr.sandbox232.opentlc.com/david
+
+# Required permissions for m2m authentication. Generates a JWT token for the workflow to use.
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build:
+    name: Build and push image to staging Quay.io Registry
+    runs-on: ubuntu-22.04
+    outputs:
+      image_ref: ${{ steps.push-to-staging-quay.outputs.registry-path }}
+      image_name: ${{ steps.build-image.outputs.image }}
+      image_tags: ${{ steps.build-image.outputs.tags }}
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Build Image
+      id: build-image
+      uses: redhat-actions/buildah-build@v2
+      with:
+        image: myapp
+        tags: ${{ github.sha }}
+        containerfiles: |
+          ./Containerfile
+
+    - name: Push to Staging Quay.io registry
+      id: push-to-staging-quay
+      uses: redhat-actions/push-to-registry@v2
+      with:
+        image: ${{ steps.build-image.outputs.image }}
+        tags: ${{ steps.build-image.outputs.tags }}
+        registry: ${{ env.QUAY_STAGING_URL }}
+        username: ${{ secrets.QUAY_STAGING_USERNAME }}
+        password: ${{ secrets.QUAY_STAGING_PASSWORD }}
+
+    - name: Print image url
+      env:
+        IMAGE_REF: ${{ steps.push-to-staging-quay.outputs.registry-path }}
+      run: |
+        echo "Image pushed: ${IMAGE_REF}"
+
+  rhacs-image-scan:
+    name: Scan image with RHACS
+    description: Scan the image with RHACS to check if it is safe.
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Resolve image ref
+        shell: bash
+        run: echo "IMAGE_REF=${{ needs.build.outputs.image_ref }}" >> "$GITHUB_ENV"
+
+      - name: Central Login
+        uses: stackrox/central-login@v1
+        with:
+          endpoint: https://central-rhacs-operator.apps.ocp.tfrbr.sandbox232.opentlc.com:443
+      - name: Install roxctl
+        uses: stackrox/roxctl-installer-action@v1
+        with:
+          central-endpoint: ${{ env.CENTRAL_ENDPOINT }}
+          central-token: ${{ env.ROX_API_TOKEN }}
+      - name: Scan image with roxctl
+        shell: bash
+        run: |
+          set -euo pipefail
+          roxctl image scan --output=table --insecure-skip-tls-verify --image="${{ env.IMAGE_REF }}"
+      - name: Check image with roxctl
+        shell: bash
+        run: |
+          set -euo pipefail
+          roxctl image check --output=table --insecure-skip-tls-verify --image="${{ env.IMAGE_REF }}"
+
+  push-to-prod:
+    name: Push image to production Quay.io Registry
+    description: Push the image to production Quay.io Registry if it passes the RHACS scan.
+    runs-on: ubuntu-22.04
+    needs: [build, rhacs-image-scan]
+    steps:
+    - name: Push To quay.io
+      id: push-to-quay
+      uses: redhat-actions/push-to-registry@v2
+      with:
+        image: ${{ needs.build.outputs.image_name }}
+        tags: ${{ needs.build.outputs.image_tags }}
+        registry: ${{ env.QUAY_PROD_URL }}
+        username: ${{ secrets.QUAY_PROD_USERNAME }}
+        password: ${{ secrets.QUAY_PROD_PASSWORD }}
+
+    - name: Print image url
+      env:
+        IMAGE_REF: ${{ steps.push-to-quay.outputs.registry-path }}
+      run: |
+        echo "Image pushed: ${IMAGE_REF}"
