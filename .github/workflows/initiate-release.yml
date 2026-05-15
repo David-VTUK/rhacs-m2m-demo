@@ -68,7 +68,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          roxctl image scan --output=json --insecure-skip-tls-verify --image="${{ env.IMAGE_REF }}" > scan-results.xml
+          roxctl image scan --output=junit --insecure-skip-tls-verify --image="${{ env.IMAGE_REF }}" > scan-results.xml
 
 
       - name: Generate Scan Summary
