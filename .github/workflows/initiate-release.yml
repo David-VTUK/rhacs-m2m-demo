@@ -71,7 +71,7 @@ jobs:
           roxctl image scan --output=json --insecure-skip-tls-verify --image="${{ env.IMAGE_REF }}" > scan-results.json
 
       - name: Convert JSON to Markdown
-        uses: buildingcash/json-to-markdown-table-action@v1
+        uses: buildingcash/json-to-markdown-table-action@v1.1.0
         id: json_table_image_scan
         with:
           json_file_path: "scan-results.json"
@@ -86,7 +86,7 @@ jobs:
           roxctl image check --output=json --insecure-skip-tls-verify --image="${{ env.IMAGE_REF }}" > check-results.json
 
       - name: Convert JSON to Markdown
-        uses: buildingcash/json-to-markdown-table-action@v1
+        uses: buildingcash/json-to-markdown-table-action@v1.1.0
         id: json_table_image_check
         with:
           json_file_path: "check-results.json"
