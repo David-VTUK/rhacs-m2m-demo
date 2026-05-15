@@ -99,7 +99,7 @@ jobs:
 
       - name: Convert CSV to Markdown
         uses: petems/csv-to-md-table-action@v4.0.0
-        id: csv_table_image_scan
+        id: csv_table_image_check
         with:
           csvinput: ${{ steps.read_csv_image_check.outputs.content }}
 
