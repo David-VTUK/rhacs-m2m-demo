@@ -79,7 +79,6 @@ jobs:
       - name: Append to Step Summary
         run: echo "${{ steps.json_table_image_scan.outputs.table }}" >> $GITHUB_STEP_SUMMARY
 
-
       - name: Check image with roxctl
         shell: bash
         run: |
