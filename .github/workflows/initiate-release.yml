@@ -70,7 +70,7 @@ jobs:
           set -euo pipefail
           roxctl image scan --output=json --insecure-skip-tls-verify --image="${{ env.IMAGE_REF }}" > scan-results.json
 
-        - name: Convert JSON to Markdown
+      - name: Convert JSON to Markdown
         uses: buildingcash/json-to-markdown-table-action@v1
         id: json_table_image_scan
         with:
@@ -86,7 +86,7 @@ jobs:
           set -euo pipefail
           roxctl image check --output=json --insecure-skip-tls-verify --image="${{ env.IMAGE_REF }}" > check-results.json
 
-        - name: Convert JSON to Markdown
+      - name: Convert JSON to Markdown
         uses: buildingcash/json-to-markdown-table-action@v1
         id: json_table_image_check
         with:
