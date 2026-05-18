@@ -7,7 +7,7 @@ COPY main.go .
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o myapp main.go
 
-FROM alpine:3.20.2
+FROM alpine:3.22.4
 
 COPY --from=builder /app/myapp /myapp
 
